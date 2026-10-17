@@ -1,0 +1,36 @@
+{
+  "name": "divora",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Divora phase 0 foundation: AI-shaped NFT trading agent, no execution.",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @divora/shared && npm run build -w @divora/chains && npm run build -w @divora/wallets && npm run build -w @divora/policy && npm run build -w @divora/agent && npm run build -w @divora/nft && npm run build -w @divora/opportunities && npm run build -w @divora/tx && npm run build -w @divora/market && npm run build -w @divora/terminal && npm run build -w @divora/web",
+    "typecheck": "npm run build -w @divora/shared && npm run build -w @divora/chains && npm run build -w @divora/opportunities && npm run build -w @divora/policy && npm run build -w @divora/tx && npm run build -w @divora/market && npm run typecheck -w @divora/shared && npm run typecheck -w @divora/chains && npm run typecheck -w @divora/wallets && npm run typecheck -w @divora/policy && npm run typecheck -w @divora/agent && npm run typecheck -w @divora/nft && npm run typecheck -w @divora/opportunities && npm run typecheck -w @divora/tx && npm run typecheck -w @divora/market && npm run typecheck -w @divora/terminal && npm run typecheck -w @divora/web",
+    "test:opportunities": "npm run build -w @divora/shared && npm run build -w @divora/opportunities && npm test -w @divora/opportunities",
+    "test:policy": "npm run build -w @divora/shared && npm run build -w @divora/opportunities && npm run build -w @divora/policy && npm test -w @divora/policy",
+    "test:tx": "npm run build -w @divora/shared && npm run build -w @divora/opportunities && npm run build -w @divora/policy && npm run build -w @divora/tx && npm test -w @divora/tx",
+    "test:market": "npm run build -w @divora/shared && npm run build -w @divora/opportunities && npm run build -w @divora/policy && npm run build -w @divora/market && npm test -w @divora/market",
+    "prisma:validate": "prisma validate",
+    "prisma:generate": "prisma generate",
+    "smoke:chain": "node scripts/smoke-chain.mjs",
+    "smoke:discovery": "node scripts/smoke-discovery.mjs"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.2",
+    "@supabase/ssr": "^0.12.7",
+    "@supabase/supabase-js": "^2.118.0",
+    "viem": "^2.37.5"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.5",
+    "prisma": "^6.16.2",
+    "typescript": "^5.9.2"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
