@@ -16,6 +16,7 @@ export interface AgentWorkerOptions {
   intervalMs?: number;
   maxTicks?: number;
   collectionSlug?: string;
+  collectionSlugs?: string[];
   chain?: string;
   chainId?: number;
   apiKey?: string;
@@ -110,11 +111,41 @@ export async function runAgentWorker(options: AgentWorkerOptions = {}) {
       const now = new Date();
       console.log(`\n[Agent Worker] Tick #${tick} at ${now.toISOString()}`);
 
-      let providerResult: ProviderResult<NormalizedListing[]> = await provider.getListings({
-        chain,
-        collectionSlug: options.collectionSlug ?? env.OPENSEA_COLLECTION_SLUG,
-        limit: 10,
-      });
+      const configuredSlugs = options.collectionSlugs?.length
+        ? options.collectionSlugs
+        : options.collectionSlug
+          ? [options.collectionSlug]
+          : String(env.OPENSEA_COLLECTION_SLUGS ?? env.OPENSEA_COLLECTION_SLUG ?? "")
+              .split(",")
+              .map((value: string) => value.trim())
+              .filter(Boolean);
+
+      const collectionResults = await Promise.all(
+        (configuredSlugs.length > 0 ? configuredSlugs : [undefined]).map(async (collectionSlug) => ({
+          collectionSlug: collectionSlug ?? null,
+          result: await provider.getListings({ chain, collectionSlug, limit: 10 }),
+        }))
+      );
+      const availableResults = collectionResults.filter(
+        (entry) => entry.result.state === "AVAILABLE" && Array.isArray(entry.result.data)
+      );
+      const combinedListings = availableResults.flatMap((entry) => entry.result.data ?? []);
+      const uniqueListings = [...new Map(combinedListings.map((listing) => [listing.id, listing])).values()];
+
+      let providerResult: ProviderResult<NormalizedListing[]> = availableResults.length > 0
+        ? { state: "AVAILABLE", data: uniqueListings, error: null }
+        : collectionResults[0]?.result ?? { state: "UNAVAILABLE", data: null, error: "No collection query was made" };
+
+      for (const entry of collectionResults) {
+        if (entry.result.state !== "AVAILABLE") {
+          console.warn(
+            `[Agent Worker] Collection query failed (${entry.collectionSlug ?? "unfiltered"}): ${entry.result.error ?? entry.result.state}`
+          );
+        }
+      }
+      console.log(
+        `[Agent Worker] Discovery queried ${collectionResults.length} collection scope(s), received ${uniqueListings.length} unique listings.`
+      );
 
      if ((providerResult.state !== "AVAILABLE" || !providerResult.data || providerResult.data.length === 0) && allowSynthetic) {
         console.log(
