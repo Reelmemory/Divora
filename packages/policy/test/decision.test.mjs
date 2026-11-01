@@ -92,6 +92,19 @@ test("decisions stay analytical and policy overrides a buy-shaped analysis", () 
   const buy = decide(strong(), config(), context(), now);
   assert.equal(buy.action, "BUY");
   assert.equal(buy.execution, "disabled");
+
+  const cautious = decide(strong(), config(), {
+    ...context(),
+    analysis: { recommendation: "review", confidence: 90, reasoning: "Needs human review.", supportingSignals: ["BELOW_REFERENCE"], invalidationConditions: [] },
+  }, now);
+  assert.equal(cautious.action, "WATCH");
+
+  const ignored = decide(strong(), config(), {
+    ...context(),
+    analysis: { recommendation: "ignore", confidence: 95, reasoning: "Evidence is unreliable.", supportingSignals: [], invalidationConditions: ["Listing data is stale"] },
+  }, now);
+  assert.equal(ignored.action, "IGNORE");
+
   const weak = decide(evaluateObservation({
     chainId: 4663, chainKey: "robinhood", contract, tokenId: "3", collectionName: "Fixture", metadataPresent: true,
     observedPrice: "60", referencePrice: "100", transferCount: 2, listingCount: 1, uniqueCounterparties: 2,
