@@ -43,7 +43,21 @@ export function decide(opportunity: Opportunity, config: ConstitutionConfig, con
   ) action = "BUY";
   else if (opportunity.score >= config.watchMinScore) action = "WATCH";
 
+  // Otari may only make a deterministic decision more conservative.
+  // It cannot promote IGNORE/WATCH to BUY or override a policy/risk rejection.
+  if (policy.allowed && risk.level !== "CRITICAL" && analysis) {
+    if (analysis.recommendation === "ignore" && (action === "BUY" || action === "WATCH")) {
+      action = "IGNORE";
+    } else if (
+      (analysis.recommendation === "review" || analysis.recommendation === "watch") &&
+      action === "BUY"
+    ) {
+      action = "WATCH";
+    }
+  }
+
   const reasoning = [
+    analysis ? `Otari advisory: ${analysis.recommendation} (confidence ${analysis.confidence}/100).` : null,
     analysis?.reasoning,
     `Risk ${risk.level}. Policy ${policy.allowed ? "allowed" : "denied"}.`,
     action === "BUY" ? "BUY is analytical only and was not executed." : "No execution path was used.",
