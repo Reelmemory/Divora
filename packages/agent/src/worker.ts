@@ -120,12 +120,33 @@ export async function runAgentWorker(options: AgentWorkerOptions = {}) {
               .map((value: string) => value.trim())
               .filter(Boolean);
 
-      const collectionResults = await Promise.all(
-        (configuredSlugs.length > 0 ? configuredSlugs : [undefined]).map(async (collectionSlug) => ({
-          collectionSlug: collectionSlug ?? null,
-          result: await provider.getListings({ chain, collectionSlug, limit: 10 }),
-        }))
-      );
+      // OpenSea requests are locally throttled by the provider. Query scopes
+      // sequentially so one collection does not cause the others to be RATE_LIMITED.
+      const collectionResults: Array<{
+        collectionSlug: string | null;
+        result: Awaited<ReturnType<typeof provider.getListings>>;
+      }> = [];
+      const collectionScopes: Array<string | undefined> =
+        configuredSlugs.length > 0 ? configuredSlugs : [undefined];
+
+      for (const collectionSlug of collectionScopes) {
+        if (collectionResults.length > 0) {
+          await new Promise((resolve) => setTimeout(resolve, 260));
+        }
+        try {
+          const result = await provider.getListings({ chain, collectionSlug, limit: 10 });
+          collectionResults.push({ collectionSlug: collectionSlug ?? null, result });
+        } catch (error) {
+          collectionResults.push({
+            collectionSlug: collectionSlug ?? null,
+            result: {
+              state: "PROVIDER_ERROR",
+              data: null,
+              error: error instanceof Error ? error.message : "unknown provider error",
+            },
+          });
+        }
+      }
       const availableResults = collectionResults.filter(
         (entry) => entry.result.state === "AVAILABLE" && Array.isArray(entry.result.data)
       );
@@ -147,7 +168,7 @@ export async function runAgentWorker(options: AgentWorkerOptions = {}) {
         `[Agent Worker] Discovery queried ${collectionResults.length} collection scope(s), received ${uniqueListings.length} unique listings.`
       );
 
-     if ((providerResult.state !== "AVAILABLE" || !providerResult.data || providerResult.data.length === 0) && allowSynthetic) {
+      if ((providerResult.state !== "AVAILABLE" || !providerResult.data || providerResult.data.length === 0) && allowSynthetic) {
         console.log(
           `[Agent Worker] Live provider returned ${providerResult.data?.length ?? 0} listings (state=${providerResult.state}). Using synthetic discovery feed.`
         );
