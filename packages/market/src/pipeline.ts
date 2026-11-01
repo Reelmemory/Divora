@@ -97,16 +97,6 @@ export async function runListingPipeline(input: {
     scoreByContractToken.set(`${(opp.contract ?? "").toLowerCase()}:${opp.tokenId ?? ""}`, opp.score);
   }
 
-  if (input.opportunityStore) {
-    for (const opp of opportunities) {
-      try {
-        await input.opportunityStore.saveOpportunity(opp);
-      } catch (err) {
-        console.error(`Failed to persist opportunity ${opp.id}:`, err);
-      }
-    }
-  }
-
   const rankedListings = rankListings(
     input.provider.data.map((listing) => {
       const key = `${(listing.contractAddress ?? "").toLowerCase()}:${listing.tokenId ?? ""}`;
@@ -133,6 +123,25 @@ export async function runListingPipeline(input: {
         if (analysis) aiAnalyses.set(opportunity.id, analysis);
       } catch (error) {
         console.warn(`AI analysis unavailable for ${opportunity.id}:`, error instanceof Error ? error.message : "unknown error");
+      }
+    }
+  }
+
+  // Persist deterministic analysis and Otari's separate advisory assessment together.
+  // The Otari result is never substituted for the deterministic opportunity analysis.
+  if (input.opportunityStore) {
+    for (const opportunity of opportunities) {
+      try {
+        const otari = aiAnalyses.get(opportunity.id) ?? null;
+        await input.opportunityStore.saveOpportunity({
+          ...opportunity,
+          analysis: {
+            ...opportunity.analysis,
+            otari,
+          },
+        });
+      } catch (err) {
+        console.error(`Failed to persist opportunity ${opportunity.id}:`, err);
       }
     }
   }
