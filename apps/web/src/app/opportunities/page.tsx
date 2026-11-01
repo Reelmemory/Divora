@@ -46,13 +46,27 @@ export default async function OpportunitiesPage() {
 
   // Fixture rows use StructuredRecommendation, while persisted rows wrap the
   // advisory under analysis.otari. Normalize both shapes for the table.
-  const displayRows = rows.map((item) => ({
-    ...item,
-    otari:
-      item.analysis && typeof item.analysis === "object" && "otari" in item.analysis
-        ? item.otari
-        : null,
-  }));
+  const displayRows = rows.map((item) => {
+    const analysis = item.analysis as
+      | {
+          reasoning?: string;
+          otari?: {
+            recommendation?: "review" | "watch" | "ignore";
+            confidence?: number;
+            reasoning?: string;
+            supportingSignals?: string[];
+            invalidationConditions?: string[];
+          } | null;
+        }
+      | null
+      | undefined;
+
+    return {
+      ...item,
+      analysis,
+      otari: analysis?.otari ?? null,
+    };
+  });
 
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-12">
@@ -102,14 +116,14 @@ export default async function OpportunitiesPage() {
                   {item.otari ? (
                     <>
                       <div className="font-medium uppercase">
-                        {item.analysis.otari.recommendation} · {item.analysis.otari.confidence}% confidence
+                        {item.otari.recommendation} · {item.otari.confidence}% confidence
                       </div>
-                      <div className="text-xs text-muted-foreground">{item.analysis.otari.reasoning}</div>
+                      <div className="text-xs text-muted-foreground">{item.otari.reasoning}</div>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        Signals: {item.analysis.otari.supportingSignals?.join(", ") || "none"}
+                        Signals: {item.otari.supportingSignals?.join(", ") || "none"}
                       </div>
                       <div className="mt-1 text-xs text-muted-foreground">
-                        Reconsider if: {item.analysis.otari.invalidationConditions?.join("; ") || "not specified"}
+                        Reconsider if: {item.otari.invalidationConditions?.join("; ") || "not specified"}
                       </div>
                     </>
                   ) : (
