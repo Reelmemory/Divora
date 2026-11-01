@@ -18,7 +18,7 @@
     "prisma:generate": "prisma generate",
     "smoke:chain": "node scripts/smoke-chain.mjs",
     "smoke:discovery": "node scripts/smoke-discovery.mjs",
-    "test:agent": "npm run build -w @divora/shared && npm run build -w @divora/opportunities && npm run build -w @divora/agent && npm test -w @divora/agent"
+    "test:agent": "npm run build -w @divora/shared && npm run build -w @divora/chains && npm run build -w @divora/opportunities && npm run build -w @divora/policy && npm run build -w @divora/tx && npm run build -w @divora/market && npm run build -w @divora/agent && npm test -w @divora/agent"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
