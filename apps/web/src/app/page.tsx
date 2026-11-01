@@ -94,9 +94,11 @@ export default async function DashboardHomePage() {
     { step: "1. DISCOVER", label: "Listings Ingested", count: snapshotCount, active: snapshotCount > 0 },
     { step: "2. ANALYZE", label: "Opportunities Scored", count: opportunityCount, active: opportunityCount > 0 },
     { step: "3. DECIDE", label: "Policy Decisions", count: decisionCount, active: decisionCount > 0 },
-    { step: "4. VALIDATE", label: "Intents Built", count: intentCount, active: intentCount > 0 },
-    { step: "5. SIMULATE", label: "RPC Simulations", count: simulationCount, active: simulationCount > 0 },
-    { step: "6. EXECUTE", label: "Broadcast Guard", count: "LOCKED", active: false },
+    { step: "4. VALIDATE", label: "Intent validation", count: intentCount, active: false },
+    { step: "5. SIMULATE", label: "RPC simulations", count: simulationCount, active: false },
+    { step: "6. EXECUTE", label: "Signing & broadcast", count: "DISABLED", active: false },
+    { step: "7. VERIFY", label: "Receipt & ownership", count: "NOT WIRED", active: false },
+    { step: "8. PORTFOLIO", label: "Position management", count: "NOT WIRED", active: false },
   ];
 
   return (
@@ -116,7 +118,7 @@ export default async function DashboardHomePage() {
                 </span>
               </div>
               <p className="text-xs text-zinc-400">
-                Autonomous NFT Market Discovery, Deterministic Policy &amp; Simulation Pipeline
+                AI-Assisted NFT Market Research · Deterministic Risk &amp; Policy Controls
               </p>
             </div>
           </div>
@@ -177,7 +179,7 @@ export default async function DashboardHomePage() {
               <Cpu className="h-4 w-4 text-emerald-400" />
             </div>
             <p className="mt-3 text-3xl font-bold text-white">{decisionCount}</p>
-            <p className="mt-1 text-xs text-emerald-400">{buyDecisions} BUY signals in latest batch</p>
+            <p className="mt-1 text-xs text-emerald-400">{buyDecisions} BUY decisions in latest records</p>
           </div>
 
           <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-5">
@@ -186,7 +188,7 @@ export default async function DashboardHomePage() {
               <Zap className="h-4 w-4 text-purple-400" />
             </div>
             <p className="mt-3 text-3xl font-bold text-white">{simulationCount}</p>
-            <p className="mt-1 text-xs text-zinc-500">Non-broadcast execution guard active</p>
+            <p className="mt-1 text-xs text-zinc-500">No transaction broadcast</p>
           </div>
         </section>
 
@@ -196,14 +198,14 @@ export default async function DashboardHomePage() {
             <div className="flex items-center gap-2">
               <Layers className="h-4 w-4 text-emerald-400" />
               <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-200">
-                End-to-End Autonomous Pipeline Status
+                Pipeline Capability & Telemetry
               </h2>
             </div>
             <span className="font-mono text-xs text-zinc-400">
-              Agent Worker: {snapshotCount > 0 ? "ACTIVE" : "IDLE"}
+              Historical records: {snapshotCount > 0 ? "PRESENT" : "NONE"}
             </span>
           </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-4">
             {pipelineStages.map((stage) => (
               <div
                 key={stage.step}
