@@ -120,7 +120,10 @@ test("pipeline persists Otari advisory separately from deterministic analysis", 
   assert.equal(result.aiAnalysisCount, 1);
   assert.equal(saved.length, 1);
   assert.deepEqual(saved[0].analysis.otari, recommendation);
-  assert.ok(saved[0].analysis.reasoning !== undefined || saved[0].analysis.signals !== undefined);
+  assert.deepEqual(
+    Object.fromEntries(Object.entries(saved[0].analysis).filter(([key]) => key !== "otari")),
+    result.opportunities[0].analysis,
+  );
   assert.equal(decisions.length, result.decisions.length);
   assert.equal(result.decisions[0].action === "BUY", false);
 });
