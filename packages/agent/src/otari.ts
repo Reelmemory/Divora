@@ -66,8 +66,8 @@ export function createOtariAnalyzer(
   fetchImpl: typeof fetch = fetch
 ): ((opportunity: Opportunity) => Promise<StructuredRecommendation | null>) {
   const apiKey = config.apiKey;
-  const baseUrl = (config.baseUrl ?? "https://api.otari.ai/v1").replace(/\/+$/, "");
-  const model = config.model ?? "mzai:moonshotai/Kimi-K2.6";
+  const baseUrl = (config.baseUrl ?? "https://api.otari.ai/api/v1").replace(/\/+$/, "");
+  const model = config.model ?? "moonshotai/kimi-k2.6";
 
   return async (opportunity) => {
     if (!apiKey) return null;
