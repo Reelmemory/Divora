@@ -13,7 +13,7 @@ packages/shared Lifecycle types
 packages/chains ChainAdapter and Robinhood Chain config
 packages/wallets WalletProvider interface (connected mode only)
 packages/policy TradingConstitution, fail-closed
-packages/agent  Lifecycle context types
+packages/agent  Lifecycle worker + Otari market analysis adapter
 packages/nft    Collection and listing types
 prisma/         Schema foundation
 scripts/        Chain smoke test (read-only)
@@ -30,4 +30,18 @@ npm run prisma:validate
 ROBINHOOD_RPC_URL=https://rpc.mainnet.chain.robinhood.com ROBINHOOD_CHAIN_ID=4663 npm run smoke:chain
 ```
 
-Copy `.env.example` to `.env` for local placeholders. Do not commit `.env`.
+Copy `.env.example` to `.env` and fill in your local credentials. Never commit `.env`.
+
+## Otari hosted AI gateway
+
+Divora sends opportunity observations to Otari's OpenAI-compatible Chat Completions endpoint for advisory market analysis. Configure:
+
+- `OTARI_AI_TOKEN`: your Otari hosted-platform API token
+- `OTARI_BASE_URL`: defaults to `https://api.otari.ai/api/v1`
+- `OTARI_MODEL`: defaults to `openai:gpt-4o-mini`
+
+Add a provider key (for example, OpenAI) in your Otari account so the gateway can route the selected model. The Otari response is treated as untrusted advisory context: deterministic Divora risk and policy checks remain authoritative. Otari cannot sign, broadcast, construct calldata, or override policy.
+
+The agent defaults to Robinhood Chain (4663). Live discovery requires `OPENSEA_API_KEY`. Synthetic listings are disabled by default; set `allowSyntheticFallback` explicitly only for local tests. The collection allowlist is empty by default, so BUY decisions remain blocked until `DIVORA_ALLOWED_COLLECTIONS` is configured.
+
+The current worker does not submit transactions. Simulation reports unavailable unless a real simulator is configured.
