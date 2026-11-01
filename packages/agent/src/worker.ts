@@ -192,6 +192,12 @@ export async function runAgentWorker(options: AgentWorkerOptions = {}) {
       console.log(
         `[Agent Worker] Stage=${result.stage} | Snapshots=${result.persisted} | Opps=${result.opportunities.length} | Decisions=${result.decisions.map((d) => d.action).join(",") || "none"} | AI=${result.aiAnalysisCount ?? 0} | Sim=${result.simulation.state}`
       );
+      if (result.error) {
+        console.error(`[Agent Worker] Pipeline error: ${result.error}`);
+      }
+      if (result.persistenceError) {
+        console.error(`[Agent Worker] Persistence error: ${result.persistenceError}`);
+      }
 
       if (maxTicks !== undefined && tick >= maxTicks) break;
       await new Promise((resolve) => setTimeout(resolve, intervalMs));
