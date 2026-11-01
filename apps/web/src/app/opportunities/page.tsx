@@ -30,7 +30,16 @@ export default async function OpportunitiesPage() {
           status: item.status,
           confidence: item.confidence,
           signals: item.signals ?? [],
-          analysis: (item.analysis as { reasoning?: string }) ?? { reasoning: "" },
+          analysis: (item.analysis as {
+            reasoning?: string;
+            otari?: {
+              recommendation?: "review" | "watch" | "ignore";
+              confidence?: number;
+              reasoning?: string;
+              supportingSignals?: string[];
+              invalidationConditions?: string[];
+            } | null;
+          }) ?? { reasoning: "", otari: null },
           updatedAt: item.updatedAt instanceof Date ? item.updatedAt.toISOString() : String(item.updatedAt),
         }))
       : sampleOpportunities;
@@ -56,7 +65,8 @@ export default async function OpportunitiesPage() {
               <th className="px-3 py-2">Asset</th>
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Confidence</th>
-              <th className="px-3 py-2">Signals</th>
+              <th className="px-3 py-2">Deterministic signals</th>
+              <th className="px-3 py-2">Otari advisory</th>
               <th className="px-3 py-2">Updated</th>
             </tr>
           </thead>
@@ -77,6 +87,24 @@ export default async function OpportunitiesPage() {
                     .map((signal: any) => signal.code)
                     .join(", ") || "none"}
                   <div className="text-xs text-muted-foreground">{item.analysis?.reasoning}</div>
+                </td>
+                <td className="px-3 py-2 min-w-64">
+                  {item.analysis?.otari ? (
+                    <>
+                      <div className="font-medium uppercase">
+                        {item.analysis.otari.recommendation} · {item.analysis.otari.confidence}% confidence
+                      </div>
+                      <div className="text-xs text-muted-foreground">{item.analysis.otari.reasoning}</div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        Signals: {item.analysis.otari.supportingSignals?.join(", ") || "none"}
+                      </div>
+                      <div className="mt-1 text-xs text-muted-foreground">
+                        Reconsider if: {item.analysis.otari.invalidationConditions?.join("; ") || "not specified"}
+                      </div>
+                    </>
+                  ) : (
+                    <span className="text-xs text-muted-foreground">Not analyzed / unavailable</span>
+                  )}
                 </td>
                 <td className="px-3 py-2">{item.updatedAt}</td>
               </tr>
