@@ -93,3 +93,34 @@ test("pipeline reaches decision, ranks ETH ahead of USDG, and keeps simulation n
   assert.equal(result.simulation.executable, false);
   assert.equal(result.simulation.onChain, false);
 });
+
+test("pipeline persists Otari advisory separately from deterministic analysis", async () => {
+  const saved = [];
+  const decisions = [];
+  const recommendation = {
+    recommendation: "watch",
+    confidence: 82,
+    reasoning: "Listing evidence merits monitoring, not immediate action.",
+    supportingSignals: [],
+    invalidationConditions: ["Listing expires or price changes"],
+  };
+  const result = await runListingPipeline({
+    provider: { state: "AVAILABLE", data: [listing], error: null },
+    store: { async upsertSnapshots(rows) { return { persisted: rows.length }; } },
+    opportunityStore: {
+      async saveOpportunity(value) { saved.push(value); return value; },
+      async saveDecision(value) { decisions.push(value); return value; },
+    },
+    analyzeOpportunity: async () => recommendation,
+    config,
+    now,
+  });
+
+  assert.equal(result.stage, "complete");
+  assert.equal(result.aiAnalysisCount, 1);
+  assert.equal(saved.length, 1);
+  assert.deepEqual(saved[0].analysis.otari, recommendation);
+  assert.ok(saved[0].analysis.reasoning !== undefined || saved[0].analysis.signals !== undefined);
+  assert.equal(decisions.length, result.decisions.length);
+  assert.equal(result.decisions[0].action === "BUY", false);
+});
