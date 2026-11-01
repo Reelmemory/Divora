@@ -12,7 +12,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "start": "node --env-file=../../.env --import tsx src/worker.ts"
+    "start": "node --env-file=../../.env --import tsx src/worker.ts",
+    "test": "node --test"
   },
   "dependencies": {
     "@divora/shared": "0.0.0",
