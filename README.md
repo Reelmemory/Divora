@@ -38,10 +38,12 @@ Divora sends opportunity observations to Otari's OpenAI-compatible Chat Completi
 
 - `OTARI_AI_TOKEN`: your Otari hosted-platform API token
 - `OTARI_BASE_URL`: defaults to `https://api.otari.ai/api/v1`
-- `OTARI_MODEL`: defaults to `openai:gpt-4o-mini`
+- `OTARI_MODEL`: defaults to `moonshotai/kimi-k2.6`
 
-Add a provider key (for example, OpenAI) in your Otari account so the gateway can route the selected model. The Otari response is treated as untrusted advisory context: deterministic Divora risk and policy checks remain authoritative. Otari cannot sign, broadcast, construct calldata, or override policy.
+The verified hosted gateway endpoint is `https://api.otari.ai/api/v1`. The selected model ID is `moonshotai/kimi-k2.6` (not the `mzai:` alias). The Otari response is treated as untrusted advisory context: deterministic Divora risk and policy checks remain authoritative. Otari cannot sign, broadcast, construct calldata, or override policy.
+
+Run the adapter test suite with `npm run test:agent`. It uses a mocked gateway and does not spend API credits.
 
 The agent defaults to Robinhood Chain (4663). Live discovery requires `OPENSEA_API_KEY`. Synthetic listings are disabled by default; set `allowSyntheticFallback` explicitly only for local tests. The collection allowlist is empty by default, so BUY decisions remain blocked until `DIVORA_ALLOWED_COLLECTIONS` is configured.
 
-The current worker does not submit transactions. Simulation reports unavailable unless a real simulator is configured.
+The current worker does not submit transactions. The Otari integration is analysis-only; transaction signing and broadcasting remain disabled.
