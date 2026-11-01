@@ -256,6 +256,7 @@ export async function runListingPipeline(input: {
     opportunities,
     rankedListings,
     decisions,
+    aiAnalysisCount: aiAnalyses.size,
     orders,
     approvals,
     readiness,
