@@ -16,3 +16,4 @@ export function nextStage(stage: LifecycleStage): LifecycleStage | null {
   return LIFECYCLE_STAGES[index + 1] ?? null;
 }
 export { runAgentWorker, defaultAgentConstitution, type AgentWorkerOptions } from "./worker.js";
+export { createOtariAnalyzer, type OtariAnalyzerConfig } from "./otari.js";
