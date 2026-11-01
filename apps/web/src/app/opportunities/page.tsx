@@ -44,6 +44,16 @@ export default async function OpportunitiesPage() {
         }))
       : sampleOpportunities;
 
+  // Fixture rows use StructuredRecommendation, while persisted rows wrap the
+  // advisory under analysis.otari. Normalize both shapes for the table.
+  const displayRows = rows.map((item) => ({
+    ...item,
+    otari:
+      item.analysis && typeof item.analysis === "object" && "otari" in item.analysis
+        ? item.otari
+        : null,
+  }));
+
   return (
     <main className="mx-auto flex max-w-5xl flex-col gap-6 px-6 py-12">
       <div>
@@ -71,7 +81,7 @@ export default async function OpportunitiesPage() {
             </tr>
           </thead>
           <tbody>
-            {rows.map((item) => (
+            {displayRows.map((item) => (
               <tr key={item.id} className="border-t border-border">
                 <td className="px-3 py-2">{item.score ?? "—"}</td>
                 <td className="px-3 py-2">{item.strategy ?? "—"}</td>
@@ -89,7 +99,7 @@ export default async function OpportunitiesPage() {
                   <div className="text-xs text-muted-foreground">{item.analysis?.reasoning}</div>
                 </td>
                 <td className="px-3 py-2 min-w-64">
-                  {item.analysis?.otari ? (
+                  {item.otari ? (
                     <>
                       <div className="font-medium uppercase">
                         {item.analysis.otari.recommendation} · {item.analysis.otari.confidence}% confidence
