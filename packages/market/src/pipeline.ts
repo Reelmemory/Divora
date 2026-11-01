@@ -14,6 +14,7 @@ import { persistListings, type ListingStore } from "./persist.js";
 import { rankListings } from "./rank.js";
 import { assessFulfillmentReadiness } from "./readiness.js";
 import { quoteFromEnvironment } from "./swap.js";
+import type { Opportunity, StructuredRecommendation } from "@divora/shared";
 
 export interface OpportunityStore {
   saveOpportunity(opp: any): Promise<any>;
@@ -38,6 +39,7 @@ export async function runListingPipeline(input: {
   slippageBps?: number;
   estimatedGas?: string;
   now?: Date;
+  analyzeOpportunity?: (opportunity: Opportunity) => Promise<StructuredRecommendation | null>;
 }) {
   const now = input.now ?? new Date();
   const swapQuote = quoteFromEnvironment();
@@ -121,6 +123,18 @@ export async function runListingPipeline(input: {
     })
   );
 
+  const aiAnalyses = new Map<string, StructuredRecommendation>();
+  if (input.analyzeOpportunity) {
+    for (const opportunity of opportunities) {
+      try {
+        const analysis = await input.analyzeOpportunity(opportunity);
+        if (analysis) aiAnalyses.set(opportunity.id, analysis);
+      } catch (error) {
+        console.warn(`AI analysis unavailable for ${opportunity.id}:`, error instanceof Error ? error.message : "unknown error");
+      }
+    }
+  }
+
   const decisions = opportunities.map((opportunity) =>
     decide(
       opportunity,
@@ -130,6 +144,7 @@ export async function runListingPipeline(input: {
         gas: input.estimatedGas ?? "0",
         slippageBps: input.slippageBps ?? 0,
         marketplace: "opensea",
+        analysis: aiAnalyses.get(opportunity.id) ?? null,
       },
       now
     )
